@@ -1,52 +1,46 @@
 import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite"; // Removed unused Models import
+import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
 
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const COLLECTION_ID = process.env.NEXT_PUBLIC_COLLECTION_ID || "6786c7eb003c9f22421c";
+
+// Runtime check for DATABASE_ID
+if (!DATABASE_ID) {
+    throw new Error("Environment variable NEXT_PUBLIC_APPWRITE_DATABASE_ID is not set.");
+}
+
+// After the check, we can assert that DATABASE_ID is a string
 const database = new Databases(client);
 
 // Fetch interpretation
 async function fetchInterpretation(id: string) {
     try {
-        const interpretation = await database.getDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "6786c7eb003c9f22421c",
-            id
-        );
-        return interpretation;
-    } catch (err) { // Changed from error to err
-        console.error('Error fetching interpretation:', err);
-        throw new Error("Failed to fetch interpretation");
+        // Use type assertion here since we've verified DATABASE_ID exists
+        return await database.getDocument(DATABASE_ID as string, COLLECTION_ID, id);
+    } catch (err) {
+        console.error(`Error fetching interpretation with ID ${id}:`, err);
+        throw new Error(`Failed to fetch interpretation with ID ${id}`);
     }
 }
 
 // Delete interpretation
 async function deleteInterpretation(id: string) {
     try {
-        const response = await database.deleteDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "6786c7eb003c9f22421c",
-            id
-        );
-        return response;
-    } catch (err) { // Changed from error to err
-        console.error('Error deleting interpretation:', err);
-        throw new Error("Failed to delete interpretation");
+        return await database.deleteDocument(DATABASE_ID as string, COLLECTION_ID, id);
+    } catch (err) {
+        console.error(`Error deleting interpretation with ID ${id}:`, err);
+        throw new Error(`Failed to delete interpretation with ID ${id}`);
     }
 }
 
 // Update interpretation
-async function updateInterpretation(id: string, data: { term: string, interpretation: string }) {
+async function updateInterpretation(id: string, data: { term: string; interpretation: string }) {
     try {
-        const response = await database.updateDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "6786c7eb003c9f22421c",
-            id,
-            data
-        );
-        return response;
-    } catch (err) { // Changed from error to err
-        console.error('Error updating interpretation:', err);
-        throw new Error("Failed to update interpretation");
+        return await database.updateDocument(DATABASE_ID as string, COLLECTION_ID, id, data);
+    } catch (err) {
+        console.error(`Error updating interpretation with ID ${id}:`, err);
+        throw new Error(`Failed to update interpretation with ID ${id}`);
     }
 }
 
@@ -57,7 +51,7 @@ export async function GET(
     try {
         const interpretation = await fetchInterpretation(params.id);
         return NextResponse.json({ interpretation });
-    } catch (err) { // Changed from error to err
+    } catch (err) {
         console.error('GET error:', err);
         return NextResponse.json(
             { error: "Failed to fetch interpretation" },
@@ -73,7 +67,7 @@ export async function DELETE(
     try {
         await deleteInterpretation(params.id);
         return NextResponse.json({ message: "Interpretation deleted" });
-    } catch (err) { // Changed from error to err
+    } catch (err) {
         console.error('DELETE error:', err);
         return NextResponse.json(
             { error: "Failed to delete interpretation" },
@@ -90,7 +84,7 @@ export async function PUT(
         const interpretation = await req.json();
         await updateInterpretation(params.id, interpretation);
         return NextResponse.json({ message: "Interpretation updated" });
-    } catch (err) { // Changed from error to err
+    } catch (err) {
         console.error('PUT error:', err);
         return NextResponse.json(
             { error: "Failed to update interpretation" },
