@@ -1,6 +1,6 @@
 import client from "@/lib/appwrite_client";
 import { Databases } from "appwrite";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = process.env.NEXT_PUBLIC_COLLECTION_ID || "6786c7eb003c9f22421c";
@@ -45,7 +45,7 @@ async function updateInterpretation(id: string, data: { term: string; interpreta
 }
 
 export async function GET(
-    req: Request,
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
@@ -61,7 +61,7 @@ export async function GET(
 }
 
 export async function DELETE(
-    req: Request,
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
@@ -77,11 +77,11 @@ export async function DELETE(
 }
 
 export async function PUT(
-    req: Request,
+    request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
-        const interpretation = await req.json();
+        const interpretation = await request.json();
         await updateInterpretation(params.id, interpretation);
         return NextResponse.json({ message: "Interpretation updated" });
     } catch (err) {
